@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"receiving_service/internal/metrics"
+	"receiving_service/pkg/metrics"
 
 	"github.com/streadway/amqp"
 )

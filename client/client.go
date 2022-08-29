@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"receiving_service/internal/sender"
+
+	"receiving_service/pkg/sender"
 )
 
 func main() {

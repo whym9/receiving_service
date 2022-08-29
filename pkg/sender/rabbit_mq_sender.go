@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"receiving_service/internal/metrics"
-
 	"github.com/streadway/amqp"
 )
 
@@ -13,7 +11,7 @@ type Rabbit_Handler struct {
 }
 
 func (r Rabbit_Handler) StartServer(addr string, tr *chan []byte) {
-	metrics.PromoHandler{}.StartMetrics(addr)
+
 	fmt.Println("RabbitMq!")
 
 	conn, err := amqp.Dial(addr)
@@ -38,7 +36,7 @@ func (r Rabbit_Handler) StartServer(addr string, tr *chan []byte) {
 }
 
 func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) ([]byte, error) {
-	metrics.PromoHandler{}.RecordMetrics()
+
 	ch, err := conn.Channel()
 
 	if err != nil {

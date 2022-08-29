@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	uploadpb "receiving_service/internal/proto"
+	uploadpb "receiving_service/pkg/proto"
 
 	"google.golang.org/grpc"
 )

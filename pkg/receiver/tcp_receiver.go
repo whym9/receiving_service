@@ -6,7 +6,8 @@ import (
 	"io"
 	"log"
 	"net"
-	"receiving_service/internal/metrics"
+
+	"receiving_service/pkg/metrics"
 )
 
 type TCP_Handler struct {

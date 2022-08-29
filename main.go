@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 
-	"github.com/whym9/receiving_service/internal/receiver"
-	"github.com/whym9/receiving_service/internal/sender"
+	"receiving_service/pkg/receiver"
+	"receiving_service/pkg/sender"
 )
 
 var rabbit_addr string = "amqp://guest:guest@localhost:5672/"

@@ -5,7 +5,8 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"receiving_service/internal/metrics"
+
+	"receiving_service/pkg/metrics"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
