@@ -1,0 +1,35 @@
+package metrics
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+type PromoHandler struct {
+}
+
+var (
+	opsProcessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "myapp_processed_ops_total",
+		Help: "The total number of processed events",
+	})
+)
+
+func (p PromoHandler) RecordMetrics() {
+	go func() {
+		for {
+			opsProcessed.Inc()
+			time.Sleep(2 * time.Second)
+		}
+	}()
+}
+
+func (p PromoHandler) StartMetrics(addr string) {
+	http.Handle("/metrics", promhttp.Handler())
+
+	http.ListenAndServe(addr, nil)
+}
