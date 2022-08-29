@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
-	"receiving_service/internal/receiver"
-	"receiving_service/internal/sender"
+
+	"github.com/whym9/receiving_service/internal/receiver"
+	"github.com/whym9/receiving_service/internal/sender"
 )
 
 var rabbit_addr string = "amqp://guest:guest@localhost:5672/"
