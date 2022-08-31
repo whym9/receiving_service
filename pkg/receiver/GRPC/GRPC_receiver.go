@@ -1,4 +1,4 @@
-package receiver
+package GRPC
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/whym9/receiving_service/pkg/metrics"
-	uploadpb "github.com/whym9/receiving_service/pkg/proto"
+	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
+	metrics "github.com/whym9/receiving_service/pkg/metrics/prometheus"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -43,7 +43,7 @@ func (s Server) StartServer(addr string) {
 }
 
 func (s Server) Upload(stream uploadpb.UploadService_UploadServer) error {
-	metrics.PromoHandler{}.RecordMetrics()
+	metrics.NewPromoHandler().RecordMetrics()
 	fmt.Println("Got")
 	chunk := []byte{}
 

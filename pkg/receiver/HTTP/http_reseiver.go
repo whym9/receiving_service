@@ -1,4 +1,4 @@
-package receiver
+package HTTP
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/whym9/receiving_service/pkg/metrics"
+	"github.com/whym9/receiving_service/pkg/metrics/prometheus"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -27,7 +27,7 @@ func (h HTTP_Handler) StartServer(addr string) {
 }
 
 func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
-	metrics.PromoHandler{}.RecordMetrics()
+	prometheus.PromoHandler{}.RecordMetrics()
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Wrong request method"))

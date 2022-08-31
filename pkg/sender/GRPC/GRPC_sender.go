@@ -1,4 +1,4 @@
-package sender
+package GRPC
 
 import (
 	"context"
@@ -6,53 +6,54 @@ import (
 	"log"
 	"time"
 
-	uploadpb "receiving_service/pkg/proto"
+	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
 
 	"google.golang.org/grpc"
 )
 
-type Client struct {
+type Handler struct {
 	client uploadpb.UploadServiceClient
+	ch     *chan []byte
 }
 
-func NewClient(conn grpc.ClientConnInterface) Client {
-	return Client{
-		client: uploadpb.NewUploadServiceClient(conn),
+func NewGRPCHandler(ch *chan []byte) Handler {
+	return Handler{
+
+		ch: ch,
 	}
 }
 
-func (c Client) StartServer(addr string, ch *chan []byte) {
+func (h Handler) StartServer(addr string) {
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer conn.Close()
-
-	c = NewClient(conn)
+	h.client = uploadpb.NewUploadServiceClient(conn)
 
 	func() {
 		var file []byte
 		for {
-			file = <-*ch
+			file = <-*h.ch
 
-			name, err := c.Upload(file, context.Background())
+			name, err := h.Upload(file, context.Background())
 			if err != nil {
 				name = []byte("could not make statistics")
 			}
 
-			*ch <- name
+			*h.ch <- name
 		}
 
 	}()
 }
 
-func (c Client) Upload(file []byte, con context.Context) ([]byte, error) {
+func (h Handler) Upload(file []byte, con context.Context) ([]byte, error) {
 
 	ctx, cancel := context.WithDeadline(con, time.Now().Add(10*time.Second))
 	defer cancel()
 
-	stream, err := c.client.Upload(ctx)
+	stream, err := h.client.Upload(ctx)
 	if err != nil {
 
 		return []byte{}, err

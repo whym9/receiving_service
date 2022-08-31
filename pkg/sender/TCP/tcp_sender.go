@@ -1,4 +1,4 @@
-package sender
+package TCP
 
 import (
 	"encoding/binary"
@@ -8,9 +8,10 @@ import (
 )
 
 type TCP_Handler struct {
+	ch *chan []byte
 }
 
-func (t TCP_Handler) StartServer(addr string, ch *chan []byte) {
+func (t TCP_Handler) StartServer(addr string) {
 	connect, err := net.Dial("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
@@ -20,16 +21,16 @@ func (t TCP_Handler) StartServer(addr string, ch *chan []byte) {
 	func() {
 		var file []byte
 		for {
-			file = <-*ch
+			file = <-*t.ch
 			fmt.Println(len(file))
 			name, err := t.Upload(file, connect)
 			if err != nil {
 				name = []byte("could not make statistics.")
-				*ch <- name
+				*t.ch <- name
 				break
 			}
 
-			*ch <- name
+			*t.ch <- name
 		}
 
 	}()

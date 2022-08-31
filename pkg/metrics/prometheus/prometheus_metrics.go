@@ -1,4 +1,4 @@
-package metrics
+package prometheus
 
 import (
 	"net/http"
@@ -9,7 +9,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-type PromoHandler struct {
+type promoHandler struct {
+}
+
+func NewPromoHandler() promoHandler {
+	return promoHandler{}
 }
 
 var (
@@ -19,7 +23,7 @@ var (
 	})
 )
 
-func (p PromoHandler) RecordMetrics() {
+func (p promoHandler) RecordMetrics() {
 	go func() {
 		for {
 			opsProcessed.Inc()
@@ -28,7 +32,7 @@ func (p PromoHandler) RecordMetrics() {
 	}()
 }
 
-func (p PromoHandler) StartMetrics(addr string) {
+func (p promoHandler) StartMetrics(addr string) {
 	http.Handle("/metrics", promhttp.Handler())
 
 	http.ListenAndServe(addr, nil)

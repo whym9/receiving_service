@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"receiving_service/pkg/sender"
+	sender "github.com/whym9/receiving_service/pkg/sender/HTTP"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-package sender
+package RabbitMQ
 
 import (
 	"fmt"
@@ -8,9 +8,10 @@ import (
 )
 
 type Rabbit_Handler struct {
+	tr *chan []byte
 }
 
-func (r Rabbit_Handler) StartServer(addr string, tr *chan []byte) {
+func (r Rabbit_Handler) StartServer(addr string) {
 
 	fmt.Println("RabbitMq!")
 
@@ -23,7 +24,7 @@ func (r Rabbit_Handler) StartServer(addr string, tr *chan []byte) {
 
 	fmt.Println("Successfully connected to RabbitMQ Instance")
 
-	file := <-*tr
+	file := <-*r.tr
 
 	mes, err := r.Upload(file, "client", *conn)
 
@@ -31,7 +32,7 @@ func (r Rabbit_Handler) StartServer(addr string, tr *chan []byte) {
 		log.Fatal(err)
 	}
 
-	*tr <- mes
+	*r.tr <- mes
 
 }
 

@@ -1,4 +1,4 @@
-package sender
+package HTTP
 
 import (
 	"bytes"
@@ -13,17 +13,18 @@ import (
 )
 
 type HTTP_Handler struct {
+	ch *chan []byte
 }
 
-func (h HTTP_Handler) StartServer(addr string, ch *chan []byte) {
+func (h HTTP_Handler) StartServer(addr string) {
 
-	name := string(<-*ch)
+	name := string(<-*h.ch)
 	mes, err := h.Upload(addr, "POST", name)
 	if err != nil {
 		log.Fatal(err)
 
 	}
-	*ch <- mes
+	*h.ch <- mes
 
 }
 

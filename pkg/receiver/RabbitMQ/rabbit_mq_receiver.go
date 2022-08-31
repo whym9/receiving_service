@@ -1,10 +1,10 @@
-package receiver
+package RabbitMQ
 
 import (
 	"fmt"
 	"log"
 
-	"github.com/whym9/receiving_service/pkg/metrics"
+	"github.com/whym9/receiving_service/pkg/metrics/prometheus"
 
 	"github.com/streadway/amqp"
 )
@@ -18,7 +18,7 @@ func NewRabbitHandler(ch *chan []byte) Rabbit_Handler {
 }
 
 func (r Rabbit_Handler) StartServer(addr string) {
-	metrics.PromoHandler{}.StartMetrics(addr)
+	prometheus.PromoHandler{}.StartMetrics(addr)
 	conn, err := amqp.Dial(addr)
 
 	if err != nil {
@@ -59,7 +59,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 }
 
 func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
-	metrics.PromoHandler{}.RecordMetrics()
+	prometheus.PromoHandler{}.RecordMetrics()
 	err := Declerer(*ch, name)
 
 	if err != nil {
