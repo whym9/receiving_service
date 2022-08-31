@@ -1,4 +1,4 @@
-module receiving_service
+module github.com/whym9/receiving_service
 
 go 1.18
 

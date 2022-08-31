@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"receiving_service/pkg/metrics"
+	"github.com/whym9/receiving_service/pkg/metrics"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )

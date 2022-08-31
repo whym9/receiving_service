@@ -7,7 +7,7 @@ import (
 	"log"
 	"net"
 
-	"receiving_service/pkg/metrics"
+	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
 type TCP_Handler struct {

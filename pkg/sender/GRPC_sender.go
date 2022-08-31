@@ -85,6 +85,7 @@ func (c Client) Upload(file []byte, con context.Context) ([]byte, error) {
 		return []byte{}, err
 	}
 	fmt.Println("stopped sending")
+	//fmt.Println(res.GetName())
 
 	return []byte(res.GetName()), nil
 }

@@ -5,11 +5,9 @@ import (
 	"io"
 	"log"
 	"net"
-	"os"
-	"time"
 
-	"receiving_service/pkg/metrics"
-	uploadpb "receiving_service/pkg/proto"
+	"github.com/whym9/receiving_service/pkg/metrics"
+	uploadpb "github.com/whym9/receiving_service/pkg/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -23,7 +21,7 @@ type Server struct {
 
 func NewServer(ch *chan []byte) Server {
 
-	return Server{}
+	return Server{tr: ch}
 }
 
 func (s Server) StartServer(addr string) {
@@ -46,14 +44,7 @@ func (s Server) StartServer(addr string) {
 
 func (s Server) Upload(stream uploadpb.UploadService_UploadServer) error {
 	metrics.PromoHandler{}.RecordMetrics()
-
-	name := "internal/files/" + time.Now().Format("02-01-1789-8989") + ".pcapng"
-	file, err := os.Create(name)
-	if err != nil {
-
-		log.Fatal(err)
-	}
-	file.Close()
+	fmt.Println("Got")
 	chunk := []byte{}
 
 	for {
@@ -79,12 +70,13 @@ func (s Server) Upload(stream uploadpb.UploadService_UploadServer) error {
 		}
 
 	}
+	if s.tr == nil {
+		return stream.SendAndClose(&uploadpb.UploadResponse{Name: "\n Error with statistics"})
+	}
+
 	*s.tr <- chunk
 
 	mes := string(<-*s.tr)
 
-	if err != nil {
-		return stream.SendAndClose(&uploadpb.UploadResponse{Name: mes + "\n Could not save to Database"})
-	}
 	return stream.SendAndClose(&uploadpb.UploadResponse{Name: mes})
 }

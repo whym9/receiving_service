@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"receiving_service/pkg/metrics"
+	"github.com/whym9/receiving_service/pkg/metrics"
 
 	"github.com/streadway/amqp"
 )
