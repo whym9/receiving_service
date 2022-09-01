@@ -19,7 +19,7 @@ func NewRabbitHandler(ch *chan []byte) Rabbit_Handler {
 }
 
 func (r Rabbit_Handler) StartServer(addr string) {
-	r.StartMetrics(addr)
+	
 	conn, err := amqp.Dial(addr)
 
 	if err != nil {
