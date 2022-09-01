@@ -4,21 +4,22 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/whym9/receiving_service/pkg/metrics/prometheus"
+	"github.com/whym9/receiving_service/pkg/metrics"
 
 	"github.com/streadway/amqp"
 )
 
 type Rabbit_Handler struct {
+	metrics.Metrics
 	transferrer *chan []byte
 }
 
 func NewRabbitHandler(ch *chan []byte) Rabbit_Handler {
-	return Rabbit_Handler{ch}
+	return Rabbit_Handler{transferrer: ch}
 }
 
 func (r Rabbit_Handler) StartServer(addr string) {
-	prometheus.NewPromoHandler().StartMetrics(addr)
+	r.StartMetrics(addr)
 	conn, err := amqp.Dial(addr)
 
 	if err != nil {
@@ -59,7 +60,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 }
 
 func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
-	prometheus.NewPromoHandler().RecordMetrics()
+	r.RecordMetrics()
 	err := Declerer(*ch, name)
 
 	if err != nil {

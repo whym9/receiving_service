@@ -8,11 +8,14 @@ import (
 
 	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
 
+	"github.com/whym9/receiving_service/pkg/metrics"
+
 	"google.golang.org/grpc"
 )
 
 type Client struct {
 	client uploadpb.UploadServiceClient
+	metrics.Metrics
 }
 
 func NewClient(conn grpc.ClientConnInterface) Client {
@@ -26,10 +29,11 @@ type Handler struct {
 }
 
 func NewGRPCHandler(ch *chan []byte) Handler {
-	return Handler{ch}
+	return Handler{ch: ch}
 }
 
 func (h Handler) StartServer(addr string) {
+
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalln(err)
@@ -54,7 +58,7 @@ func (h Handler) StartServer(addr string) {
 }
 
 func (c Client) Upload(file []byte, con context.Context) ([]byte, error) {
-
+	c.RecordMetrics()
 	ctx, cancel := context.WithDeadline(con, time.Now().Add(10*time.Second))
 	defer cancel()
 

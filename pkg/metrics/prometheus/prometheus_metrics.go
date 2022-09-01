@@ -2,7 +2,6 @@ package prometheus
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -24,12 +23,9 @@ var (
 )
 
 func (p promoHandler) RecordMetrics() {
-	go func() {
-		for {
-			opsProcessed.Inc()
-			time.Sleep(2 * time.Second)
-		}
-	}()
+
+	opsProcessed.Inc()
+
 }
 
 func (p promoHandler) StartMetrics(addr string) {

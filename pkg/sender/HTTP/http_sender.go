@@ -10,14 +10,17 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
 type HTTP_Handler struct {
+	metrics.Metrics
 	ch *chan []byte
 }
 
 func NewHTTPHandler(ch *chan []byte) HTTP_Handler {
-	return HTTP_Handler{ch}
+	return HTTP_Handler{ch: ch}
 }
 
 func (h HTTP_Handler) StartServer(addr string) {
@@ -33,6 +36,7 @@ func (h HTTP_Handler) StartServer(addr string) {
 }
 
 func (h HTTP_Handler) Upload(urlPath, method, filename string) ([]byte, error) {
+	h.RecordMetrics()
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}

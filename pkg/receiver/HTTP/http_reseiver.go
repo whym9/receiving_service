@@ -6,15 +6,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/whym9/receiving_service/pkg/metrics/prometheus"
+	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
 type HTTP_Handler struct {
+	metrics.Metrics
 	transfer *chan []byte
 }
 
 func NewHTTPHandler(ch *chan []byte) HTTP_Handler {
-	return HTTP_Handler{ch}
+	return HTTP_Handler{transfer: ch}
 }
 
 func (h HTTP_Handler) StartServer(addr string) {
@@ -25,7 +26,7 @@ func (h HTTP_Handler) StartServer(addr string) {
 }
 
 func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
-	prometheus.NewPromoHandler().RecordMetrics()
+	h.RecordMetrics()
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Wrong request method"))

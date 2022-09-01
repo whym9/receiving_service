@@ -24,7 +24,7 @@ func main() {
 
 	Promo_Handler := metrics.NewPromoHandler()
 
-	w := worker.NewWorker(&GRPC_Handler, HTTP_handler, Promo_Handler)
+	w := worker.NewWorker(GRPC_Handler, HTTP_handler, Promo_Handler)
 
 	w.Work(addr1, addr2, addr3)
 

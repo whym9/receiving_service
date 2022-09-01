@@ -7,7 +7,7 @@ import (
 	"net"
 
 	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
-	metrics "github.com/whym9/receiving_service/pkg/metrics/prometheus"
+	"github.com/whym9/receiving_service/pkg/metrics"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -16,6 +16,7 @@ import (
 
 type Server struct {
 	uploadpb.UnimplementedUploadServiceServer
+	metrics.Metrics
 	tr *chan []byte
 }
 
@@ -43,7 +44,7 @@ func (s Server) StartServer(addr string) {
 }
 
 func (s Server) Upload(stream uploadpb.UploadService_UploadServer) error {
-	metrics.NewPromoHandler().RecordMetrics()
+	s.RecordMetrics()
 	fmt.Println("Got")
 	chunk := []byte{}
 

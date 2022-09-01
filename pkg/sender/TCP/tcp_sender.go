@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
 type TCP_Handler struct {
+	metrics.Metrics
 	ch *chan []byte
 }
 
 func NewTCPHandler(ch *chan []byte) TCP_Handler {
-	return TCP_Handler{ch}
+	return TCP_Handler{ch: ch}
 }
 
 func (t TCP_Handler) StartServer(addr string) {
@@ -42,6 +45,7 @@ func (t TCP_Handler) StartServer(addr string) {
 }
 
 func (t TCP_Handler) Upload(file []byte, connect net.Conn) ([]byte, error) {
+	t.RecordMetrics()
 	be := 0
 	en := 1024
 

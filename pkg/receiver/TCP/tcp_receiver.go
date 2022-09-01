@@ -7,15 +7,16 @@ import (
 	"log"
 	"net"
 
-	"github.com/whym9/receiving_service/pkg/metrics/prometheus"
+	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
 type TCP_Handler struct {
+	metrics.Metrics
 	transferrer *chan []byte
 }
 
 func NewTCPHandler(ch *chan []byte) TCP_Handler {
-	return TCP_Handler{ch}
+	return TCP_Handler{transferrer: ch}
 }
 
 func (t TCP_Handler) StartServer(addr string) {
@@ -26,7 +27,7 @@ func (t TCP_Handler) StartServer(addr string) {
 		return
 	}
 	fmt.Println("TCP Server has started")
-	go prometheus.NewPromoHandler().StartMetrics(addr)
+
 	for {
 		connect, err := server.Accept()
 
@@ -40,7 +41,7 @@ func (t TCP_Handler) StartServer(addr string) {
 }
 
 func (t TCP_Handler) Receive(connect net.Conn) {
-	prometheus.NewPromoHandler().RecordMetrics()
+	t.RecordMetrics()
 
 	fileConntent := []byte{}
 
