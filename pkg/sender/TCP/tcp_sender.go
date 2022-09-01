@@ -11,6 +11,10 @@ type TCP_Handler struct {
 	ch *chan []byte
 }
 
+func NewTCPHandler(ch *chan []byte) TCP_Handler {
+	return TCP_Handler{ch}
+}
+
 func (t TCP_Handler) StartServer(addr string) {
 	connect, err := net.Dial("tcp", addr)
 	if err != nil {

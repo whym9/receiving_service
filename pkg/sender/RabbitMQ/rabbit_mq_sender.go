@@ -11,6 +11,10 @@ type Rabbit_Handler struct {
 	tr *chan []byte
 }
 
+func NewRabbitMQHandler(tr *chan []byte) Rabbit_Handler {
+	return Rabbit_Handler{tr}
+}
+
 func (r Rabbit_Handler) StartServer(addr string) {
 
 	fmt.Println("RabbitMq!")
