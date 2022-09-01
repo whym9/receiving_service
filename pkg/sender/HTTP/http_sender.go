@@ -16,6 +16,10 @@ type HTTP_Handler struct {
 	ch *chan []byte
 }
 
+func NewHTTPHandler(ch *chan []byte) HTTP_Handler {
+	return HTTP_Handler{ch}
+}
+
 func (h HTTP_Handler) StartServer(addr string) {
 
 	name := string(<-*h.ch)

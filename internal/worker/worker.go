@@ -21,7 +21,7 @@ func NewWorker(s sender.Sender, r receiver.Receiver, m metrics.Metrics) worker {
 }
 
 func (w worker) Work(addr1, addr2, addr3 string) {
-	go w.metrics.Metrics(addr3)
+	go w.metrics.StartMetrics(addr3)
 	go w.sender.StartServer(addr2)
 
 	w.receiver.StartServer(addr1)

@@ -7,8 +7,6 @@ import (
 	"net/http"
 
 	"github.com/whym9/receiving_service/pkg/metrics/prometheus"
-
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type HTTP_Handler struct {
@@ -20,14 +18,14 @@ func NewHTTPHandler(ch *chan []byte) HTTP_Handler {
 }
 
 func (h HTTP_Handler) StartServer(addr string) {
-	http.Handle("/metrics", promhttp.Handler())
+
 	http.HandleFunc("/", h.Receive)
 	fmt.Println("HTTP server has started")
 	http.ListenAndServe(addr, nil)
 }
 
 func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
-	prometheus.PromoHandler{}.RecordMetrics()
+	prometheus.NewPromoHandler().RecordMetrics()
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Wrong request method"))

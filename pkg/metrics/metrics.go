@@ -1,6 +1,6 @@
 package metrics
 
 type Metrics interface {
-	Metrics(addr string)
+	StartMetrics(addr string)
 	RecordMetrics()
 }

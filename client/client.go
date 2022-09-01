@@ -12,9 +12,9 @@ func main() {
 	name := *flag.String("name", "lo.pcapng", "name of the file")
 	ch := make(chan []byte)
 
-	handler := sender.HTTP_Handler{}
+	handler := sender.NewHTTPHandler(&ch)
 
-	go handler.StartServer(addr, &ch)
+	go handler.StartServer(addr)
 
 	ch <- []byte(name)
 

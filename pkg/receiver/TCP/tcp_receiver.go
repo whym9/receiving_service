@@ -26,7 +26,7 @@ func (t TCP_Handler) StartServer(addr string) {
 		return
 	}
 	fmt.Println("TCP Server has started")
-	go prometheus.PromoHandler{}.StartMetrics(addr)
+	go prometheus.NewPromoHandler().StartMetrics(addr)
 	for {
 		connect, err := server.Accept()
 
@@ -40,7 +40,7 @@ func (t TCP_Handler) StartServer(addr string) {
 }
 
 func (t TCP_Handler) Receive(connect net.Conn) {
-	prometheus.PromoHandler{}.RecordMetrics()
+	prometheus.NewPromoHandler().RecordMetrics()
 
 	fileConntent := []byte{}
 

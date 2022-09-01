@@ -18,7 +18,7 @@ func NewRabbitHandler(ch *chan []byte) Rabbit_Handler {
 }
 
 func (r Rabbit_Handler) StartServer(addr string) {
-	prometheus.PromoHandler{}.StartMetrics(addr)
+	prometheus.NewPromoHandler().StartMetrics(addr)
 	conn, err := amqp.Dial(addr)
 
 	if err != nil {
@@ -59,7 +59,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 }
 
 func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
-	prometheus.PromoHandler{}.RecordMetrics()
+	prometheus.NewPromoHandler().RecordMetrics()
 	err := Declerer(*ch, name)
 
 	if err != nil {
