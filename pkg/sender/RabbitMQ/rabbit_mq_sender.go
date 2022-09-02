@@ -8,17 +8,29 @@ import (
 	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
+var (
+	name1 = "RabbitMQ_sent_processed_opts_total"
+	help1 = "The total number of sending requsets"
+
+	name2 = "RabbitMQ_sending_processed_errors_total"
+	help2 = "The total number of sender errors"
+
+	key1 = "sendmetric"
+	key2 = "key2"
+)
+
 type Rabbit_Handler struct {
-	metrics.Metrics
-	tr *chan []byte
+	metrics metrics.Metrics
+	tr      *chan []byte
 }
 
-func NewRabbitMQHandler(tr *chan []byte) Rabbit_Handler {
-	return Rabbit_Handler{tr: tr}
+func NewRabbitMQHandler(m metrics.Metrics, tr *chan []byte) Rabbit_Handler {
+	return Rabbit_Handler{metrics: m, tr: tr}
 }
 
 func (r Rabbit_Handler) StartServer(addr string) {
-
+	r.metrics.AddMetrics(name1, help1, key1)
+	r.metrics.AddMetrics(name2, help2, key2)
 	fmt.Println("RabbitMq!")
 
 	conn, err := amqp.Dial(addr)
@@ -43,7 +55,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 }
 
 func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) ([]byte, error) {
-	r.RecordMetrics()
+	r.metrics.Count(key1)
 	ch, err := conn.Channel()
 
 	if err != nil {
@@ -54,6 +66,7 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 	err = Publisher(*ch, "Server", []byte(name))
 
 	if err != nil {
+		r.metrics.Count(key2)
 		return []byte{}, err
 	}
 
@@ -64,11 +77,13 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 		if len(file) < en {
 			err = Publisher(*ch, name, file[be:])
 			if err != nil {
+				r.metrics.Count(key2)
 				return []byte{}, err
 			}
 
 			err = Publisher(*ch, name, []byte("Stop"))
 			if err != nil {
+				r.metrics.Count(key2)
 				return []byte{}, err
 			}
 
@@ -77,6 +92,7 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 		err = Publisher(*ch, name, file[be:en])
 
 		if err != nil {
+			r.metrics.Count(key2)
 			return []byte{}, err
 		}
 
@@ -88,6 +104,7 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 	ch, err = conn.Channel()
 
 	if err != nil {
+		r.metrics.Count(key2)
 		return []byte{}, err
 	}
 	defer ch.Close()
@@ -103,6 +120,7 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 	)
 
 	if err != nil {
+		r.metrics.Count(key2)
 		return []byte{}, err
 	}
 	var res []byte

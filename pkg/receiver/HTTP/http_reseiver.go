@@ -10,26 +10,34 @@ import (
 )
 
 type HTTP_Handler struct {
-	metrics.Metrics
+	metrics  metrics.Metrics
 	transfer *chan []byte
 }
 
-func NewHTTPHandler(ch *chan []byte) HTTP_Handler {
-	return HTTP_Handler{transfer: ch}
+var (
+	name = "HTTP_receiver_processed_errors_total"
+	help = "The total number of receiver errors"
+	key  = "errors"
+)
+
+func NewHTTPHandler(m metrics.Metrics, ch *chan []byte) HTTP_Handler {
+	return HTTP_Handler{m, ch}
 }
 
 func (h HTTP_Handler) StartServer(addr string) {
-
+	h.metrics.AddMetrics(name, help, key)
 	http.HandleFunc("/", h.Receive)
 	fmt.Println("HTTP server has started")
 	http.ListenAndServe(addr, nil)
 }
 
 func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
-	h.RecordMetrics()
+
+	h.metrics.RecordMetrics()
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Wrong request method"))
+		h.metrics.Count(key)
 		return
 	}
 
@@ -37,6 +45,7 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("could not parse multipart form: %v\n", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("CANT_PARSE_FORM"))
+		h.metrics.Count(key)
 		return
 	}
 
@@ -45,11 +54,13 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Couldn't convert"))
+		h.metrics.Count(key)
 		return
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("INVALID_FILE"))
+		h.metrics.Count(key)
 		return
 	}
 	defer file.Close()
@@ -60,6 +71,7 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("INVALID_FILE"))
+		h.metrics.Count(key)
 		return
 	}
 
@@ -67,8 +79,9 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	if fileType != "application/octet-stream" {
 		w.WriteHeader(http.StatusBadRequest)
 		_, err = w.Write([]byte("Wrong file type!"))
+		h.metrics.Count(key)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("We have this error: %v", err)
 			return
 
 		}

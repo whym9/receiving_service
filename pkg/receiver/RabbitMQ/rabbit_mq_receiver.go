@@ -9,17 +9,23 @@ import (
 	"github.com/streadway/amqp"
 )
 
+var (
+	name = "RabbitMQ_receiver_processed_errors_total"
+	help = "The total number of receiver errors"
+	key  = "errors"
+)
+
 type Rabbit_Handler struct {
-	metrics.Metrics
+	metrics     metrics.Metrics
 	transferrer *chan []byte
 }
 
-func NewRabbitHandler(ch *chan []byte) Rabbit_Handler {
-	return Rabbit_Handler{transferrer: ch}
+func NewRabbitHandler(m metrics.Metrics, ch *chan []byte) Rabbit_Handler {
+	return Rabbit_Handler{metrics: m, transferrer: ch}
 }
 
 func (r Rabbit_Handler) StartServer(addr string) {
-	r.StartMetrics(addr)
+	r.metrics.AddMetrics(name, help, key)
 	conn, err := amqp.Dial(addr)
 
 	if err != nil {
@@ -45,6 +51,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 
 	msgs, err := Consumer(ch, "Server")
 	if err != nil {
+		r.metrics.Count(key)
 		log.Fatal(err)
 	}
 
@@ -60,15 +67,17 @@ func (r Rabbit_Handler) StartServer(addr string) {
 }
 
 func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
-	r.RecordMetrics()
+	r.metrics.RecordMetrics()
 	err := Declerer(*ch, name)
 
 	if err != nil {
+		r.metrics.Count(key)
 		log.Fatal(err)
 	}
 
 	msgs, err := Consumer(ch, name)
 	if err != nil {
+		r.metrics.Count(key)
 		log.Fatal(err)
 	}
 	rec := []byte{}
@@ -80,6 +89,7 @@ func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
 			mes := string(<-*r.transferrer)
 			err = Publisher(ch, mes, name+"*")
 			if err != nil {
+				r.metrics.Count(key)
 				log.Fatal(err)
 			}
 			fmt.Println("Successfully stopped receiving file!")

@@ -18,11 +18,11 @@ func main() {
 	addr3 := *flag.String("addr3", ":8008", "metrics address")
 	ch := make(chan []byte)
 
-	HTTP_handler := receiver.NewHTTPHandler(&ch)
-
-	GRPC_Handler := sender.NewGRPCHandler(&ch)
-
 	Promo_Handler := metrics.NewPromoHandler()
+
+	HTTP_handler := receiver.NewHTTPHandler(Promo_Handler, &ch)
+
+	GRPC_Handler := sender.NewGRPCHandler(Promo_Handler, &ch)
 
 	w := worker.NewWorker(GRPC_Handler, HTTP_handler, Promo_Handler)
 

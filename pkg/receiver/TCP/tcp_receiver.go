@@ -10,16 +10,23 @@ import (
 	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
+var (
+	name = "TCP_receiver_processed_errors_total"
+	help = "The total number of receiver errors"
+	key  = "errors"
+)
+
 type TCP_Handler struct {
-	metrics.Metrics
+	metrics     metrics.Metrics
 	transferrer *chan []byte
 }
 
-func NewTCPHandler(ch *chan []byte) TCP_Handler {
-	return TCP_Handler{transferrer: ch}
+func NewTCPHandler(m metrics.Metrics, ch *chan []byte) TCP_Handler {
+	return TCP_Handler{metrics: m, transferrer: ch}
 }
 
 func (t TCP_Handler) StartServer(addr string) {
+	t.metrics.AddMetrics(name, help, key)
 	server, err := net.Listen("tcp", addr)
 	if err != nil {
 
@@ -32,7 +39,7 @@ func (t TCP_Handler) StartServer(addr string) {
 		connect, err := server.Accept()
 
 		if err != nil {
-
+			t.metrics.Count(key)
 			log.Fatal(err)
 			return
 		}
@@ -41,7 +48,7 @@ func (t TCP_Handler) StartServer(addr string) {
 }
 
 func (t TCP_Handler) Receive(connect net.Conn) {
-	t.RecordMetrics()
+	t.metrics.RecordMetrics()
 
 	fileConntent := []byte{}
 
@@ -49,7 +56,7 @@ func (t TCP_Handler) Receive(connect net.Conn) {
 		read, err := ReceiveALL(connect, 8)
 
 		if err != nil {
-
+			t.metrics.Count(key)
 			log.Fatal(err)
 			return
 		}
@@ -59,7 +66,7 @@ func (t TCP_Handler) Receive(connect net.Conn) {
 		read, err = ReceiveALL(connect, size)
 
 		if err != nil {
-
+			t.metrics.Count(key)
 			log.Fatal(err)
 			return
 		}
@@ -91,8 +98,7 @@ func ReceiveALL(connect net.Conn, size uint64) ([]byte, error) {
 	fmt.Println(size)
 	_, err := io.ReadFull(connect, read)
 	if err != nil {
-
-		log.Fatal(err)
+		log.Printf("An error occured: %v", err)
 		return []byte{}, err
 	}
 

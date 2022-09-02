@@ -13,9 +13,19 @@ import (
 	"google.golang.org/grpc"
 )
 
+var (
+	name1 = "GPRC_sent_processed_opts_total"
+	help1 = "The total number of sending requsets"
+
+	name2 = "GRPC_sending_processed_errors_total"
+	help2 = "The total number of sender errors"
+
+	key1 = "sendmetrics"
+	key2 = "errormetrics"
+)
+
 type Client struct {
 	client uploadpb.UploadServiceClient
-	metrics.Metrics
 }
 
 func NewClient(conn grpc.ClientConnInterface) Client {
@@ -25,15 +35,17 @@ func NewClient(conn grpc.ClientConnInterface) Client {
 }
 
 type Handler struct {
-	ch *chan []byte
+	metrics metrics.Metrics
+	ch      *chan []byte
 }
 
-func NewGRPCHandler(ch *chan []byte) Handler {
-	return Handler{ch: ch}
+func NewGRPCHandler(m metrics.Metrics, ch *chan []byte) Handler {
+	return Handler{metrics: m, ch: ch}
 }
 
 func (h Handler) StartServer(addr string) {
-
+	h.metrics.AddMetrics(name1, help1, key1)
+	h.metrics.AddMetrics(name2, help2, key2)
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalln(err)
@@ -45,12 +57,13 @@ func (h Handler) StartServer(addr string) {
 		var file []byte
 		for {
 			file = <-*h.ch
-
+			h.metrics.RecordMetrics()
 			name, err := cl.Upload(file, context.Background())
 			if err != nil {
+				h.metrics.Count(key2)
 				name = []byte("could not make statistics")
 			}
-
+			h.metrics.Count(key1)
 			*h.ch <- name
 		}
 
@@ -58,7 +71,7 @@ func (h Handler) StartServer(addr string) {
 }
 
 func (c Client) Upload(file []byte, con context.Context) ([]byte, error) {
-	c.RecordMetrics()
+
 	ctx, cancel := context.WithDeadline(con, time.Now().Add(10*time.Second))
 	defer cancel()
 
@@ -74,14 +87,12 @@ func (c Client) Upload(file []byte, con context.Context) ([]byte, error) {
 
 		if en > len(file) {
 			if err := stream.Send(&uploadpb.UploadRequest{Chunk: file[be:]}); err != nil {
-
 				return []byte{}, err
 			}
 			break
 		}
 
 		if err := stream.Send(&uploadpb.UploadRequest{Chunk: file[be:en]}); err != nil {
-
 			return []byte{}, err
 		}
 
@@ -91,11 +102,10 @@ func (c Client) Upload(file []byte, con context.Context) ([]byte, error) {
 
 	res, err := stream.CloseAndRecv()
 	if err != nil {
-
 		return []byte{}, err
 	}
+
 	fmt.Println("stopped sending")
-	//fmt.Println(res.GetName())
 
 	return []byte(res.GetName()), nil
 }
