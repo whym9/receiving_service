@@ -17,10 +17,10 @@ var (
 
 type Rabbit_Handler struct {
 	metrics     metrics.Metrics
-	transferrer *chan []byte
+	transferrer chan []byte
 }
 
-func NewRabbitHandler(m metrics.Metrics, ch *chan []byte) Rabbit_Handler {
+func NewRabbitHandler(m metrics.Metrics, ch chan []byte) Rabbit_Handler {
 	return Rabbit_Handler{metrics: m, transferrer: ch}
 }
 
@@ -84,9 +84,9 @@ func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
 
 	for d := range msgs {
 		if string(d.Body) == "Stop" {
-			*r.transferrer <- rec
+			r.transferrer <- rec
 
-			mes := string(<-*r.transferrer)
+			mes := string(<-r.transferrer)
 			err = Publisher(ch, mes, name+"*")
 			if err != nil {
 				r.metrics.Count(key)

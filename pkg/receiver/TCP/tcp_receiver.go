@@ -18,10 +18,10 @@ var (
 
 type TCP_Handler struct {
 	metrics     metrics.Metrics
-	transferrer *chan []byte
+	transferrer chan []byte
 }
 
-func NewTCPHandler(m metrics.Metrics, ch *chan []byte) TCP_Handler {
+func NewTCPHandler(m metrics.Metrics, ch chan []byte) TCP_Handler {
 	return TCP_Handler{metrics: m, transferrer: ch}
 }
 
@@ -83,9 +83,9 @@ func (t TCP_Handler) Receive(connect net.Conn) {
 	}
 	fmt.Println("Stopped receiving")
 
-	*t.transferrer <- fileConntent
+	t.transferrer <- fileConntent
 
-	statistics := <-*t.transferrer
+	statistics := <-t.transferrer
 	connect.Write([]byte(statistics))
 	connect.Close()
 	fmt.Println("File receiving has ended")

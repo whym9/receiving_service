@@ -13,7 +13,7 @@ func main() {
 	name := *flag.String("name", "lo.pcapng", "name of the file")
 	ch := make(chan []byte)
 	metrics := metrics.NewPromoHandler()
-	handler := sender.NewHTTPHandler(metrics, &ch)
+	handler := sender.NewHTTPHandler(metrics, ch)
 
 	go handler.StartServer(addr)
 

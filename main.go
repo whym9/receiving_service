@@ -20,9 +20,9 @@ func main() {
 
 	Promo_Handler := metrics.NewPromoHandler()
 
-	HTTP_handler := receiver.NewHTTPHandler(Promo_Handler, &ch)
+	HTTP_handler := receiver.NewHTTPHandler(Promo_Handler, ch)
 
-	GRPC_Handler := sender.NewGRPCHandler(Promo_Handler, &ch)
+	GRPC_Handler := sender.NewGRPCHandler(Promo_Handler, ch)
 
 	w := worker.NewWorker(GRPC_Handler, HTTP_handler, Promo_Handler)
 

@@ -22,10 +22,10 @@ var (
 
 type TCP_Handler struct {
 	metrics metrics.Metrics
-	ch      *chan []byte
+	ch      chan []byte
 }
 
-func NewTCPHandler(m metrics.Metrics, ch *chan []byte) TCP_Handler {
+func NewTCPHandler(m metrics.Metrics, ch chan []byte) TCP_Handler {
 	return TCP_Handler{metrics: m, ch: ch}
 }
 
@@ -43,16 +43,16 @@ func (t TCP_Handler) StartServer(addr string) {
 	func() {
 		var file []byte
 		for {
-			file = <-*t.ch
+			file = <-t.ch
 			fmt.Println(len(file))
 			name, err := t.Upload(file, connect)
 			if err != nil {
 				name = []byte("could not make statistics.")
-				*t.ch <- name
+				t.ch <- name
 				break
 			}
 
-			*t.ch <- name
+			t.ch <- name
 		}
 
 	}()

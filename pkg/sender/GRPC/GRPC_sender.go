@@ -36,10 +36,10 @@ func NewClient(conn grpc.ClientConnInterface) Client {
 
 type Handler struct {
 	metrics metrics.Metrics
-	ch      *chan []byte
+	ch      chan []byte
 }
 
-func NewGRPCHandler(m metrics.Metrics, ch *chan []byte) Handler {
+func NewGRPCHandler(m metrics.Metrics, ch chan []byte) Handler {
 	return Handler{metrics: m, ch: ch}
 }
 
@@ -56,7 +56,7 @@ func (h Handler) StartServer(addr string) {
 	func() {
 		var file []byte
 		for {
-			file = <-*h.ch
+			file = <-h.ch
 			h.metrics.RecordMetrics()
 			name, err := cl.Upload(file, context.Background())
 			if err != nil {
@@ -64,7 +64,7 @@ func (h Handler) StartServer(addr string) {
 				name = []byte("could not make statistics")
 			}
 			h.metrics.Count(key1)
-			*h.ch <- name
+			h.ch <- name
 		}
 
 	}()

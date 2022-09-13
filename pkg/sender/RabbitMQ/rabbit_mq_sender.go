@@ -21,10 +21,10 @@ var (
 
 type Rabbit_Handler struct {
 	metrics metrics.Metrics
-	tr      *chan []byte
+	tr      chan []byte
 }
 
-func NewRabbitMQHandler(m metrics.Metrics, tr *chan []byte) Rabbit_Handler {
+func NewRabbitMQHandler(m metrics.Metrics, tr chan []byte) Rabbit_Handler {
 	return Rabbit_Handler{metrics: m, tr: tr}
 }
 
@@ -42,7 +42,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 
 	fmt.Println("Successfully connected to RabbitMQ Instance")
 
-	file := <-*r.tr
+	file := <-r.tr
 
 	mes, err := r.Upload(file, "client", *conn)
 
@@ -50,7 +50,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 		log.Fatal(err)
 	}
 
-	*r.tr <- mes
+	r.tr <- mes
 
 }
 
@@ -63,7 +63,7 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 	}
 	defer ch.Close()
 
-	err = Publisher(*ch, "Server", []byte(name))
+	err = Publisher(ch, "Server", []byte(name))
 
 	if err != nil {
 		r.metrics.Count(key2)
@@ -75,13 +75,13 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 	for {
 
 		if len(file) < en {
-			err = Publisher(*ch, name, file[be:])
+			err = Publisher(ch, name, file[be:])
 			if err != nil {
 				r.metrics.Count(key2)
 				return []byte{}, err
 			}
 
-			err = Publisher(*ch, name, []byte("Stop"))
+			err = Publisher(ch, name, []byte("Stop"))
 			if err != nil {
 				r.metrics.Count(key2)
 				return []byte{}, err
@@ -89,7 +89,7 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 
 			break
 		}
-		err = Publisher(*ch, name, file[be:en])
+		err = Publisher(ch, name, file[be:en])
 
 		if err != nil {
 			r.metrics.Count(key2)
@@ -134,7 +134,7 @@ func (r Rabbit_Handler) Upload(file []byte, name string, conn amqp.Connection) (
 	return res, nil
 }
 
-func Publisher(ch amqp.Channel, name string, mes []byte) error {
+func Publisher(ch *amqp.Channel, name string, mes []byte) error {
 	err := ch.Publish(
 		"",
 		name,

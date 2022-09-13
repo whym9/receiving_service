@@ -11,7 +11,7 @@ import (
 
 type HTTP_Handler struct {
 	metrics  metrics.Metrics
-	transfer *chan []byte
+	transfer chan []byte
 }
 
 var (
@@ -20,7 +20,7 @@ var (
 	key  = "errors"
 )
 
-func NewHTTPHandler(m metrics.Metrics, ch *chan []byte) HTTP_Handler {
+func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 	return HTTP_Handler{m, ch}
 }
 
@@ -91,8 +91,8 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("FileType: %s, File: %s\n", fileType, fileHeader.Filename)
 	fmt.Printf("File size (bytes): %v\n", fileSize)
 
-	*h.transfer <- fileContent
-	res := <-*h.transfer
+	h.transfer <- fileContent
+	res := <-h.transfer
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)

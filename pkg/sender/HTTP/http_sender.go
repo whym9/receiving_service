@@ -27,23 +27,23 @@ var (
 
 type HTTP_Handler struct {
 	metrics metrics.Metrics
-	ch      *chan []byte
+	ch      chan []byte
 }
 
-func NewHTTPHandler(m metrics.Metrics, ch *chan []byte) HTTP_Handler {
+func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 	return HTTP_Handler{metrics: m, ch: ch}
 }
 
 func (h HTTP_Handler) StartServer(addr string) {
 	h.metrics.AddMetrics(name1, help1, key1)
 	h.metrics.AddMetrics(name2, help2, key2)
-	name := string(<-*h.ch)
+	name := string(<-h.ch)
 	mes, err := h.Upload(addr, "POST", name)
 	if err != nil {
 		log.Fatal(err)
 
 	}
-	*h.ch <- mes
+	h.ch <- mes
 
 }
 
