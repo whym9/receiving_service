@@ -11,6 +11,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
@@ -21,8 +23,8 @@ var (
 	name2 = "HTTP_sending_processed_errors_total"
 	help2 = "The total number of sender errors"
 
-	key1 = "sendmetric"
-	key2 = "key2"
+	sent prometheus.Counter
+	errs prometheus.Counter
 )
 
 type HTTP_Handler struct {
@@ -35,8 +37,15 @@ func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 }
 
 func (h HTTP_Handler) StartServer(addr string) {
-	h.metrics.AddMetrics(name1, help1, key1)
-	h.metrics.AddMetrics(name2, help2, key2)
+	sent = promauto.NewCounter(prometheus.CounterOpts{
+		Name: name1,
+		Help: help1,
+	})
+
+	errs = promauto.NewCounter(prometheus.CounterOpts{
+		Name: name2,
+		Help: help2,
+	})
 	name := string(<-h.ch)
 	mes, err := h.Upload(addr, "POST", name)
 	if err != nil {
@@ -48,7 +57,7 @@ func (h HTTP_Handler) StartServer(addr string) {
 }
 
 func (h HTTP_Handler) Upload(urlPath, method, filename string) ([]byte, error) {
-	h.metrics.Count(key1)
+	sent.Inc()
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -57,23 +66,23 @@ func (h HTTP_Handler) Upload(urlPath, method, filename string) ([]byte, error) {
 	writer := multipart.NewWriter(body)
 	fw, err := writer.CreateFormFile("uploadFile", filename)
 	if err != nil {
-		h.metrics.Count(key2)
+		errs.Inc()
 		return []byte{}, err
 	}
 	file, err := os.Open(filename)
 	if err != nil {
-		h.metrics.Count(key2)
+		errs.Inc()
 		return []byte{}, err
 	}
 	_, err = io.Copy(fw, file)
 	if err != nil {
-		h.metrics.Count(key2)
+		errs.Inc()
 		return []byte{}, err
 	}
 	writer.Close()
 	req, err := http.NewRequest(method, urlPath, bytes.NewReader(body.Bytes()))
 	if err != nil {
-		h.metrics.Count(key2)
+		errs.Inc()
 		fmt.Println(".request")
 		return []byte{}, err
 	}
