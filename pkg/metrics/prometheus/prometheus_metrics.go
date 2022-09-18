@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -10,6 +11,8 @@ import (
 
 type promoHandler struct {
 }
+
+var mux sync.Mutex
 
 func NewPromoHandler() promoHandler {
 	return promoHandler{}
@@ -32,8 +35,11 @@ func (p promoHandler) AddMetrics(name, help, key string) {
 }
 
 func (p promoHandler) RecordMetrics() {
+	mux.Lock()
 
 	opsProcessed.Inc()
+
+	mux.Unlock()
 
 }
 
