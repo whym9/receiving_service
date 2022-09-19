@@ -9,13 +9,13 @@ import (
 )
 
 func main() {
-	addr := *flag.String("addr", "http://localhost:8080/", "server address")
+
 	name := *flag.String("name", "lo.pcapng", "name of the file")
 	ch := make(chan []byte)
 	metrics := metrics.NewPromoHandler()
 	handler := sender.NewHTTPHandler(metrics, ch)
 
-	go handler.StartServer(addr)
+	go handler.StartServer()
 
 	ch <- []byte(name)
 

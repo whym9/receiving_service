@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,7 +44,9 @@ func (p promoHandler) RecordMetrics() {
 
 }
 
-func (p promoHandler) StartMetrics(addr string) {
+func (p promoHandler) StartMetrics() {
+	addr := os.Getenv("PROMETHEUS_ADDRESS")
+
 	http.Handle("/metrics", promhttp.Handler())
 
 	http.ListenAndServe(addr, nil)

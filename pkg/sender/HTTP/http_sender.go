@@ -36,7 +36,9 @@ func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 	return HTTP_Handler{metrics: m, ch: ch}
 }
 
-func (h HTTP_Handler) StartServer(addr string) {
+func (h HTTP_Handler) StartServer() {
+	addr := os.Getenv("HTTP_SENDER")
+
 	sent = promauto.NewCounter(prometheus.CounterOpts{
 		Name: name1,
 		Help: help1,

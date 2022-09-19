@@ -3,16 +3,19 @@ package RabbitMQ
 import (
 	"fmt"
 	"log"
+	"os"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/whym9/receiving_service/pkg/metrics"
 
 	"github.com/streadway/amqp"
 )
 
 var (
-	name = "RabbitMQ_receiver_processed_errors_total"
-	help = "The total number of receiver errors"
-	key  = "errors"
+	name   = "RabbitMQ_receiver_processed_errors_total"
+	help   = "The total number of receiver errors"
+	errors prometheus.Counter
 )
 
 type Rabbit_Handler struct {
@@ -24,8 +27,13 @@ func NewRabbitHandler(m metrics.Metrics, ch chan []byte) Rabbit_Handler {
 	return Rabbit_Handler{metrics: m, transferrer: ch}
 }
 
-func (r Rabbit_Handler) StartServer(addr string) {
-	r.metrics.AddMetrics(name, help, key)
+func (r Rabbit_Handler) StartServer() {
+	addr := os.Getenv("RABBITMQ_RECEIVER")
+
+	errors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: name,
+		Help: help,
+	})
 	conn, err := amqp.Dial(addr)
 
 	if err != nil {
@@ -51,7 +59,7 @@ func (r Rabbit_Handler) StartServer(addr string) {
 
 	msgs, err := Consumer(ch, "Server")
 	if err != nil {
-		r.metrics.Count(key)
+		errors.Inc()
 		log.Fatal(err)
 	}
 
@@ -71,13 +79,13 @@ func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
 	err := Declerer(*ch, name)
 
 	if err != nil {
-		r.metrics.Count(key)
+		errors.Inc()
 		log.Fatal(err)
 	}
 
 	msgs, err := Consumer(ch, name)
 	if err != nil {
-		r.metrics.Count(key)
+		errors.Inc()
 		log.Fatal(err)
 	}
 	rec := []byte{}
@@ -89,7 +97,7 @@ func (r Rabbit_Handler) Receive(ch *amqp.Channel, name string) {
 			mes := string(<-r.transferrer)
 			err = Publisher(ch, mes, name+"*")
 			if err != nil {
-				r.metrics.Count(key)
+				errors.Inc()
 				log.Fatal(err)
 			}
 			fmt.Println("Successfully stopped receiving file!")

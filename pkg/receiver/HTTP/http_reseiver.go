@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -26,7 +27,9 @@ func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 	return HTTP_Handler{m, ch}
 }
 
-func (h HTTP_Handler) StartServer(addr string) {
+func (h HTTP_Handler) StartServer() {
+	addr := os.Getenv("HTTP_RECEIVER")
+
 	errors = promauto.NewCounter(prometheus.CounterOpts{
 		Name: name,
 		Help: help,

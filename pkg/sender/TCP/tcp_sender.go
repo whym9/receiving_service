@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
@@ -16,8 +19,8 @@ var (
 	name2 = "RabbitMQ_sending_processed_errors_total"
 	help2 = "The total number of sender errors"
 
-	key1 = "sendmetric"
-	key2 = "key2"
+	sent   prometheus.Counter
+	errors prometheus.Counter
 )
 
 type TCP_Handler struct {
@@ -29,10 +32,17 @@ func NewTCPHandler(m metrics.Metrics, ch chan []byte) TCP_Handler {
 	return TCP_Handler{metrics: m, ch: ch}
 }
 
-func (t TCP_Handler) StartServer(addr string) {
+func (t TCP_Handler) StartServer() {
+	addr := os.Getenv("TCP_SENDER")
 
-	t.metrics.AddMetrics(name1, help1, key1)
-	t.metrics.AddMetrics(name2, help2, key2)
+	sent = promauto.NewCounter(prometheus.CounterOpts{
+		Name: name1,
+		Help: help1,
+	})
+	errors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: name2,
+		Help: help2,
+	})
 
 	connect, err := net.Dial("tcp", addr)
 	if err != nil {
@@ -60,7 +70,7 @@ func (t TCP_Handler) StartServer(addr string) {
 }
 
 func (t TCP_Handler) Upload(file []byte, connect net.Conn) ([]byte, error) {
-	t.metrics.Count(key1)
+	sent.Inc()
 	be := 0
 	en := 1024
 
@@ -71,12 +81,12 @@ func (t TCP_Handler) Upload(file []byte, connect net.Conn) ([]byte, error) {
 			binary.BigEndian.PutUint64(bin, uint64(len(file)-be))
 
 			if _, err := connect.Write(bin); err != nil {
-				t.metrics.Count(key2)
+				errors.Inc()
 				return []byte{}, err
 			}
 
 			if _, err := connect.Write(file[be:]); err != nil {
-				t.metrics.Count(key2)
+				errors.Inc()
 				return []byte{}, err
 			}
 			bin = make([]byte, 8)
@@ -84,12 +94,12 @@ func (t TCP_Handler) Upload(file []byte, connect net.Conn) ([]byte, error) {
 			binary.BigEndian.PutUint64(bin, uint64(4))
 
 			if _, err := connect.Write(bin); err != nil {
-				t.metrics.Count(key2)
+				errors.Inc()
 				return []byte{}, err
 			}
 
 			if _, err := connect.Write([]byte("STOP")); err != nil {
-				t.metrics.Count(key2)
+				errors.Inc()
 				return []byte{}, err
 			}
 
@@ -99,12 +109,12 @@ func (t TCP_Handler) Upload(file []byte, connect net.Conn) ([]byte, error) {
 		binary.BigEndian.PutUint64(bin, uint64(1024))
 
 		if _, err := connect.Write(bin); err != nil {
-			t.metrics.Count(key2)
+			errors.Inc()
 			return []byte{}, err
 		}
 
 		if _, err := connect.Write(file[be:en]); err != nil {
-			t.metrics.Count(key2)
+			errors.Inc()
 			return []byte{}, err
 		}
 
@@ -117,7 +127,7 @@ func (t TCP_Handler) Upload(file []byte, connect net.Conn) ([]byte, error) {
 	_, err := connect.Read(read)
 
 	if err != nil {
-		t.metrics.Count(key2)
+		errors.Inc()
 		return []byte{}, err
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -45,7 +46,9 @@ func NewGRPCHandler(m metrics.Metrics, ch chan []byte) Handler {
 	return Handler{metrics: m, ch: ch}
 }
 
-func (h Handler) StartServer(addr string) {
+func (h Handler) StartServer() {
+	addr := os.Getenv("GRPC_SENDER")
+
 	sent = promauto.NewCounter(prometheus.CounterOpts{
 		Name: name1,
 		Help: help1,

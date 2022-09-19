@@ -1,13 +1,15 @@
-FROM golang:1.18 as builder
-RUN mkdir /build
-ADD . /build/
-WORKDIR /build
+FROM golang:1.18-alpine:latest as builder
+WORKDIR /receiver
+COPY . .
+RUN go build -o main main.go
+
 
 FROM alpine:latest
-COPY --from=builder /build/main . 
+WORKDIR /receiver
+COPY --from=builder /receiver/main . 
 
 ENV HTTP_RECEIVER="8080" \
     GRPC_SENDER="6006" \
     METRICS_ADDRESS="443"
 
-CMD ["./main"]
+CMD ["receiver/main"]

@@ -6,14 +6,17 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
 var (
-	name = "TCP_receiver_processed_errors_total"
-	help = "The total number of receiver errors"
-	key  = "errors"
+	name   = "TCP_receiver_processed_errors_total"
+	help   = "The total number of receiver errors"
+	errors prometheus.Counter
 )
 
 type TCP_Handler struct {
@@ -25,8 +28,13 @@ func NewTCPHandler(m metrics.Metrics, ch chan []byte) TCP_Handler {
 	return TCP_Handler{metrics: m, transferrer: ch}
 }
 
-func (t TCP_Handler) StartServer(addr string) {
-	t.metrics.AddMetrics(name, help, key)
+func (t TCP_Handler) StartServer() {
+	addr := os.Getenv("TCP_RECEIVER")
+
+	errors = promauto.NewCounter(prometheus.CounterOpts{
+		Name: name,
+		Help: help,
+	})
 	server, err := net.Listen("tcp", addr)
 	if err != nil {
 
@@ -39,7 +47,7 @@ func (t TCP_Handler) StartServer(addr string) {
 		connect, err := server.Accept()
 
 		if err != nil {
-			t.metrics.Count(key)
+			errors.Inc()
 			log.Fatal(err)
 			return
 		}
@@ -56,7 +64,7 @@ func (t TCP_Handler) Receive(connect net.Conn) {
 		read, err := ReceiveALL(connect, 8)
 
 		if err != nil {
-			t.metrics.Count(key)
+			errors.Inc()
 			log.Fatal(err)
 			return
 		}
@@ -66,7 +74,7 @@ func (t TCP_Handler) Receive(connect net.Conn) {
 		read, err = ReceiveALL(connect, size)
 
 		if err != nil {
-			t.metrics.Count(key)
+			errors.Inc()
 			log.Fatal(err)
 			return
 		}

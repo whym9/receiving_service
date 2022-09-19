@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -36,7 +37,8 @@ func NewServer(m metrics.Metrics, ch chan []byte) Server {
 	return Server{metrics: m, tr: ch}
 }
 
-func (s Server) StartServer(addr string) {
+func (s Server) StartServer() {
+	addr := os.Getenv("GRPC_RECEIVER")
 
 	lis, err := net.Listen("tcp", addr)
 	fmt.Println("GRPC server has started")
