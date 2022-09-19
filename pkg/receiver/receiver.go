@@ -1,5 +1,5 @@
 package receiver
 
 type Receiver interface {
-	StartServer()
+	StartServer(aadr string)
 }

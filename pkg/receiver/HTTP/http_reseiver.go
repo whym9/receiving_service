@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/whym9/receiving_service/pkg/metrics"
 )
@@ -25,8 +24,8 @@ func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 	return HTTP_Handler{m, ch}
 }
 
-func (h HTTP_Handler) StartServer() {
-	addr := os.Getenv("HTTP_SENDER")
+func (h HTTP_Handler) StartServer(addr string) {
+	//addr := os.Getenv("HTTP_SENDER")
 	h.metrics.AddMetrics(name, help, key)
 	http.HandleFunc("/", h.Receive)
 	fmt.Println("HTTP server has started")

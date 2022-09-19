@@ -1,5 +1,5 @@
 package sender
 
 type Sender interface {
-	StartServer()
+	StartServer(addr string)
 }

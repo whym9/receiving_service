@@ -15,7 +15,7 @@ func main() {
 	metrics := metrics.NewPromoHandler()
 	handler := sender.NewHTTPHandler(metrics, ch)
 
-	go handler.StartServer()
+	go handler.StartServer("http://localhost:8080")
 
 	ch <- []byte(name)
 
