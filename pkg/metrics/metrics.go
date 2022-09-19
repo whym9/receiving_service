@@ -1,7 +1,7 @@
 package metrics
 
 type Metrics interface {
-	StartMetrics(addr string)
+	StartMetrics()
 	RecordMetrics()
 	AddMetrics(name, help, key string)
 	Count(key string)

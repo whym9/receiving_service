@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
@@ -43,14 +44,15 @@ func NewGRPCHandler(m metrics.Metrics, ch chan []byte) Handler {
 	return Handler{metrics: m, ch: ch}
 }
 
-func (h Handler) StartServer(addr string) {
-	//addr := os.Getenv("GRPC_SENDER")
+func (h Handler) StartServer() {
+	addr := os.Getenv("GRPC_SENDER")
 
 	h.metrics.AddMetrics(name1, help1, key1)
 	h.metrics.AddMetrics(name2, help2, key2)
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
+		fmt.Println("1")
 		log.Fatalln(err)
 	}
 	defer conn.Close()
@@ -79,6 +81,7 @@ func (c Client) Upload(file []byte, con context.Context) ([]byte, error) {
 	defer cancel()
 
 	stream, err := c.client.Upload(ctx)
+
 	if err != nil {
 		fmt.Println(err.Error())
 		return []byte{}, err

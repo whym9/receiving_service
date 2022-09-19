@@ -34,8 +34,8 @@ func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 	return HTTP_Handler{metrics: m, ch: ch}
 }
 
-func (h HTTP_Handler) StartServer(addr string) {
-	//addr := os.Getenv("HTTP_SENDER")
+func (h HTTP_Handler) StartServer() {
+	addr := os.Getenv("HTTP_SENDER")
 
 	h.metrics.AddMetrics(name1, help1, key1)
 	h.metrics.AddMetrics(name2, help2, key2)

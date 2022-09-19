@@ -21,8 +21,8 @@ func NewWorker(s sender.Sender, r receiver.Receiver, m metrics.Metrics) worker {
 }
 
 func (w worker) Work() {
-	go w.metrics.StartMetrics("443")
-	go w.sender.StartServer(":6006")
+	go w.metrics.StartMetrics()
+	go w.sender.StartServer()
 
-	w.receiver.StartServer("localhost:8080")
+	w.receiver.StartServer()
 }

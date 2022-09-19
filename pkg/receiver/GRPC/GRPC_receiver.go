@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 
 	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
 	"github.com/whym9/receiving_service/pkg/metrics"
@@ -31,8 +32,8 @@ func NewServer(m metrics.Metrics, ch chan []byte) Server {
 	return Server{metrics: m, tr: ch}
 }
 
-func (s Server) StartServer(addr string) {
-	//addr := os.Getenv("GRPC_RECEIVER")
+func (s Server) StartServer() {
+	addr := os.Getenv("GRPC_RECEIVER")
 
 	s.metrics.AddMetrics(name, help, key)
 
