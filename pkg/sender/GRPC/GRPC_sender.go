@@ -7,8 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
 
 	"github.com/whym9/receiving_service/pkg/metrics"
@@ -23,8 +21,8 @@ var (
 	name2 = "GRPC_sending_processed_errors_total"
 	help2 = "The total number of sender errors"
 
-	sent   prometheus.Counter
-	errors prometheus.Counter
+	key1 = "sent"
+	key2 = "errors"
 )
 
 type Client struct {
@@ -49,15 +47,8 @@ func NewGRPCHandler(m metrics.Metrics, ch chan []byte) Handler {
 func (h Handler) StartServer() {
 	addr := os.Getenv("GRPC_SENDER")
 
-	sent = promauto.NewCounter(prometheus.CounterOpts{
-		Name: name1,
-		Help: help1,
-	})
-
-	errors = promauto.NewCounter(prometheus.CounterOpts{
-		Name: name2,
-		Help: help2,
-	})
+	h.metrics.AddMetrics(name1, help1, key1)
+	h.metrics.AddMetrics(name2, help2, key2)
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
@@ -73,10 +64,10 @@ func (h Handler) StartServer() {
 			h.metrics.RecordMetrics()
 			name, err := cl.Upload(file, context.Background())
 			if err != nil {
-				errors.Inc()
+				h.metrics.Count(key2)
 				name = []byte("could not make statistics")
 			}
-			sent.Inc()
+			h.metrics.Count(key1)
 			h.ch <- name
 		}
 

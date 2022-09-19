@@ -7,8 +7,6 @@ import (
 	"net"
 	"os"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	uploadpb "github.com/whym9/receiving_service/pkg/GRPC_gen"
 	"github.com/whym9/receiving_service/pkg/metrics"
 
@@ -18,9 +16,9 @@ import (
 )
 
 var (
-	name   = "GRPC_receiver_processed_errors_total"
-	help   = "The total number of receiver errors"
-	errors prometheus.Counter
+	name = "GRPC_receiver_processed_errors_total"
+	help = "The total number of receiver errors"
+	key  = "errors"
 )
 
 type Server struct {
@@ -30,20 +28,19 @@ type Server struct {
 }
 
 func NewServer(m metrics.Metrics, ch chan []byte) Server {
-	errors = promauto.NewCounter(prometheus.CounterOpts{
-		Name: name,
-		Help: help,
-	})
+
 	return Server{metrics: m, tr: ch}
 }
 
 func (s Server) StartServer() {
 	addr := os.Getenv("GRPC_RECEIVER")
 
+	s.metrics.AddMetrics(name, help, key)
+
 	lis, err := net.Listen("tcp", addr)
 	fmt.Println("GRPC server has started")
 	if err != nil {
-		errors.Inc()
+		s.metrics.Count(key)
 		log.Fatal(err)
 	}
 	defer lis.Close()
@@ -59,7 +56,7 @@ func (s Server) StartServer() {
 
 func (s Server) Upload(stream uploadpb.UploadService_UploadServer) error {
 	s.metrics.RecordMetrics()
-	fmt.Println("Got")
+
 	chunk := []byte{}
 
 	for {
@@ -71,7 +68,7 @@ func (s Server) Upload(stream uploadpb.UploadService_UploadServer) error {
 			break
 		}
 		if err != nil {
-			errors.Inc()
+			s.metrics.Count(key)
 			return status.Error(codes.Internal, err.Error())
 		}
 
@@ -80,13 +77,13 @@ func (s Server) Upload(stream uploadpb.UploadService_UploadServer) error {
 		chunk = append(chunk, bin...)
 
 		if err != nil {
-			errors.Inc()
+			s.metrics.Count(key)
 			return status.Error(codes.Internal, err.Error())
 		}
 
 	}
 	if s.tr == nil {
-		errors.Inc()
+		s.metrics.Count(key)
 		return stream.SendAndClose(&uploadpb.UploadResponse{Name: "\n Error with statistics"})
 	}
 

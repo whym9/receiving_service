@@ -29,18 +29,17 @@ var (
 var funcs = make(map[string]prometheus.Counter)
 
 func (p promoHandler) AddMetrics(name, help, key string) {
-	funcs[key] = promauto.NewCounter(prometheus.CounterOpts{
+
+	funcs[key] = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "myapp_processed_ops_total",
 		Help: "The total number of processed events",
 	})
+
 }
 
 func (p promoHandler) RecordMetrics() {
-	mux.Lock()
 
 	opsProcessed.Inc()
-
-	mux.Unlock()
 
 }
 
@@ -53,5 +52,7 @@ func (p promoHandler) StartMetrics() {
 }
 
 func (p promoHandler) Count(key string) {
+	mux.Lock()
 	funcs[key].Inc()
+	mux.Unlock()
 }

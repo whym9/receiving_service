@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/whym9/receiving_service/pkg/metrics"
 )
 
@@ -18,9 +16,9 @@ type HTTP_Handler struct {
 }
 
 var (
-	name   = "HTTP_receiver_processed_errors_total"
-	help   = "The total number of receiver errors"
-	errors prometheus.Counter
+	name = "HTTP_receiver_processed_errors_total"
+	help = "The total number of receiver errors"
+	key  = "errors"
 )
 
 func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
@@ -28,15 +26,16 @@ func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 }
 
 func (h HTTP_Handler) StartServer() {
-	addr := os.Getenv("HTTP_RECEIVER")
-
-	errors = promauto.NewCounter(prometheus.CounterOpts{
-		Name: name,
-		Help: help,
-	})
+	addr := os.Getenv("HTTP_SENDER")
+	h.metrics.AddMetrics(name, help, key)
 	http.HandleFunc("/", h.Receive)
 	fmt.Println("HTTP server has started")
-	http.ListenAndServe(addr, nil)
+	err := http.ListenAndServe(addr, nil)
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 }
 
 func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +44,7 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Wrong request method"))
-		errors.Inc()
+		h.metrics.Count(key)
 		return
 	}
 
@@ -53,7 +52,7 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("could not parse multipart form: %v\n", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("CANT_PARSE_FORM"))
-		errors.Inc()
+		h.metrics.Count(key)
 		return
 	}
 
@@ -62,13 +61,13 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Couldn't convert"))
-		errors.Inc()
+		h.metrics.Count(key)
 		return
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("INVALID_FILE"))
-		errors.Inc()
+		h.metrics.Count(key)
 		return
 	}
 	defer file.Close()
@@ -79,7 +78,7 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("INVALID_FILE"))
-		errors.Inc()
+		h.metrics.Count(key)
 		return
 	}
 
@@ -87,7 +86,7 @@ func (h HTTP_Handler) Receive(w http.ResponseWriter, r *http.Request) {
 	if fileType != "application/octet-stream" {
 		w.WriteHeader(http.StatusBadRequest)
 		_, err = w.Write([]byte("Wrong file type!"))
-		errors.Inc()
+		h.metrics.Count(key)
 		if err != nil {
 			log.Printf("We have this error: %v", err)
 			return
