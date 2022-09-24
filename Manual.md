@@ -24,4 +24,24 @@ Start building docker images subsequentially. Go to each repository's Dockerfile
 
 ```
 
-Step 3. Running services.
+Step 4. Creating .env files
+
+Create a file in your cloned repositories and call file.env
+In this file you need to declare environmental variables in this format:
+```
+VAR_NAME1=VAR_VALUE1
+VAR_NAME=VAR_VALUE2
+...
+```
+List of environmental valriable names are: HTTP_RECEIVER, GRPC_SENDER, PROMETHEUS_ADDRESS - receiving_service; GRPC_RECEIVER, GRPC_SENDER, PROMETHEUS_ADDRESS, DIR - pcap_statistics; GRPC_RECEIVER, PROMETHEUS_ADDRESS, DIR, DSN - saving_service.
+
+Step 5. Running docker images as containers 
+
+We use the command -pd to run the image in a detached mode and give it some parameters of host_port:docker_port to connect your host port to docker's. For example:
+
+```
+sudo docker run -pd 8000:80 image-name
+```
+
+Step 6. Testing
+
