@@ -85,9 +85,9 @@ curl -v -F uploadFile=lo.pcapng -F upload=@lo.pcapng http://localhost:8080
 
 where there is a lo.pcapng value you need to give the name of your file (or the directory for the second case). and at the end the address you are running the receiving_service on.
 
-5. Or runnin a client service [like client.go](https://github.com/whym9/receiving_service/client) by doing:
+5. Or runnin a client service like client.go that was given in this repository in client folder by doing:
 ```
-go run main.go
+go run client.go
 ```
 
 Step 7. Possible answers
