@@ -45,3 +45,11 @@ sudo docker run -pd 8000:80 image-name
 
 Step 6. Testing
 
+Now all services are running in a detached mode and are connected with each other. To test the whole system we need to make a request to the receiving_service. 
+You can do it by:
+1. making a POST request through POSTMAN to the port you specified. 
+2. Similarly, make a curl request.
+3. Or runnin a client service [like client.go](github.com/whym9/receiving_service/client) by doing  go run main.go
+
+Step 7. Possible answers
+
