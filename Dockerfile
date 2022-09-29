@@ -1,4 +1,4 @@
-FROM golang:1.18-alpine:3.14 as builder
+FROM golang:1.18-alpine3.14 as builder
 WORKDIR /receiver
 COPY . .
 RUN go build -o main main.go
