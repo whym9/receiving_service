@@ -1,16 +1,11 @@
-FROM golang:1.18-alpine:latest as builder
+FROM golang:1.18-alpine3.14 as builder
 WORKDIR /receiver
 COPY . .
 RUN go build -o main main.go
 
-
-FROM alpine:latest
+FROM alpine:3.14
 WORKDIR /receiver
-COPY --from=builder /receiver/main . 
+COPY --from=builder /receiver/main .
 
-ENV HTTP_RECEIVER="localhost:8080" \
-    GRPC_SENDER=":6006" \
-    PROMETHEUS_ADDRESS="http://localhost:443" \
-    HTTP_SENDER="http://localhost:8080"
+CMD [ "/receiver/main" ]
 
-CMD ["receiver/main"]
