@@ -102,6 +102,7 @@ func ReceiveALL(connect net.Conn, size uint64) ([]byte, error) {
 	fmt.Println(size)
 	_, err := io.ReadFull(connect, read)
 	if err != nil {
+
 		log.Printf("An error occured: %v", err)
 		return []byte{}, err
 	}

@@ -3,7 +3,6 @@ package HTTP
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -77,7 +76,7 @@ func (h HTTP_Handler) Upload(urlPath, method, filename string) ([]byte, error) {
 	req, err := http.NewRequest(method, urlPath, bytes.NewReader(body.Bytes()))
 	if err != nil {
 		h.metrics.Count(key2)
-		fmt.Println(".request")
+
 		return []byte{}, err
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())

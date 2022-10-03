@@ -10,7 +10,7 @@ import (
 
 func main() {
 
-	name := *flag.String("name", "lo.pcapng", "name of the file")
+	name := *flag.String("name", "lo.pcap", "name of the file")
 	ch := make(chan []byte)
 	metrics := metrics.NewPromoHandler()
 	handler := sender.NewHTTPHandler(metrics, ch)

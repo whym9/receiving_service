@@ -52,7 +52,7 @@ func (h Handler) StartServer() {
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {
-		fmt.Println("1")
+
 		log.Fatalln(err)
 	}
 	defer conn.Close()
@@ -65,6 +65,7 @@ func (h Handler) StartServer() {
 			h.metrics.RecordMetrics()
 			name, err := cl.Upload(file, context.Background())
 			if err != nil {
+				fmt.Println(err.Error())
 				h.metrics.Count(key2)
 				name = []byte("could not make statistics")
 			}
