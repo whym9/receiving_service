@@ -26,7 +26,7 @@ func NewHTTPHandler(m metrics.Metrics, ch chan []byte) HTTP_Handler {
 }
 
 func (h HTTP_Handler) StartServer() {
-	addr := os.Getenv("HTTP_SENDER")
+	addr := os.Getenv("HTTP_RECEIVER")
 	h.metrics.AddMetrics(name, help, key)
 	http.HandleFunc("/", h.Receive)
 	fmt.Println("HTTP server has started")
